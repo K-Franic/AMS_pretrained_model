@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 from models import CONFIGS as CONFIGS_ViT_seg
 from mpl_toolkits.mplot3d import axes3d
 from natsort import natsorted
+from device_helper import device
 
 
 
@@ -71,9 +72,9 @@ def main():
     best_model = torch.load(model_dir + natsorted(os.listdir(model_dir))[model_idx])['state_dict']
     print('Best model: {}'.format(natsorted(os.listdir(model_dir))[model_idx]))
     model.load_state_dict(best_model)
-    model.cuda()
+    model.to(device)
     reg_model = utils.register_model((160, 192, 224), 'nearest')
-    reg_model.cuda()
+    reg_model.to(device)
     test_composed = transforms.Compose([trans.Seg_norm(),
                                         trans.NumpyType((np.float32, np.int16)),
                                         ])
@@ -86,7 +87,7 @@ def main():
         stdy_idx = 0
         for data in test_loader:
             model.eval()
-            data = [t.cuda() for t in data]
+            data = [t.to(device) for t in data]
             x = data[0]
             y = data[1]
             x_seg = data[2]
@@ -94,7 +95,7 @@ def main():
 
             x_in = torch.cat((x,y),dim=1)
             x_def, flow = model(x_in)
-            def_out = reg_model([x_seg.cuda().float(), flow.cuda()])
+            def_out = reg_model([x_seg.to(device).float(), flow.to(device)])
             tar = y.detach().cpu().numpy()[0, 0, :, :, :]
             #jac_det = utils.jacobian_determinant(flow.detach().cpu().numpy()[0, :, :, :, :])
             line = utils.dice_val_substruct(def_out.long(), y_seg.long(), stdy_idx)
@@ -112,7 +113,7 @@ def main():
             # flip moving and fixed images
             y_in = torch.cat((y, x), dim=1)
             y_def, flow = model(y_in)
-            def_out = reg_model([y_seg.cuda().float(), flow.cuda()])
+            def_out = reg_model([y_seg.to(device).float(), flow.to(device)])
             tar = x.detach().cpu().numpy()[0, 0, :, :, :]
 
             #jac_det = utils.jacobian_determinant(flow.detach().cpu().numpy()[0, :, :, :, :])
@@ -144,7 +145,7 @@ def csv_writter(line, name):
 if __name__ == '__main__':
     '''
     GPU configuration
-    '''
+    
     GPU_iden = 0
     GPU_num = torch.cuda.device_count()
     print('Number of GPU: ' + str(GPU_num))
@@ -154,5 +155,5 @@ if __name__ == '__main__':
     torch.cuda.set_device(GPU_iden)
     GPU_avai = torch.cuda.is_available()
     print('Currently using: ' + torch.cuda.get_device_name(GPU_iden))
-    print('If the GPU is available? ' + str(GPU_avai))
+    print('If the GPU is available? ' + str(GPU_avai))'''
     main()

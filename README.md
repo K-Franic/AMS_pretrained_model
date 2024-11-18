@@ -1,6 +1,5 @@
 # Komentar Franic:
-# Prvi commit osnovne kode (nespremenjen izhodiščni repo)
-
+Drugi commit kode (delne spremembe za .cuda -> to(device))
 
 
 
