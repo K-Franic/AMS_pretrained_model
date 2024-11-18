@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch, sys
 from torch import nn
 import pystrum.pynd.ndutils as nd
+from device_helper import device
 
 def sliding_predict(model, image, tile_size, n_dims, overlap=1/2, flip=False):
     image_size = image.shape
@@ -13,8 +14,8 @@ def sliding_predict(model, image, tile_size, n_dims, overlap=1/2, flip=False):
     num_rows = int(math.ceil((image_size[2] - tile_size[0]) / stride_x) + 1)
     num_cols = int(math.ceil((image_size[3] - tile_size[1]) / stride_y) + 1)
     num_slcs = int(math.ceil((image_size[4] - tile_size[2]) / stride_z) + 1)
-    total_predictions = torch.zeros((1, n_dims, image_size[2], image_size[3], image_size[4])).cuda()
-    count_predictions = torch.zeros((image_size[2], image_size[3], image_size[4])).cuda()
+    total_predictions = torch.zeros((1, n_dims, image_size[2], image_size[3], image_size[4])).to(device())
+    count_predictions = torch.zeros((image_size[2], image_size[3], image_size[4])).to(device())
     tile_counter = 0
     print(num_rows)
     for row in range(num_rows):
@@ -47,7 +48,7 @@ def sliding_predict(model, image, tile_size, n_dims, overlap=1/2, flip=False):
                     padded_prediction = padded_prediction/4
                 predictions = padded_prediction[:, :, :img.shape[2], :img.shape[3], :img.shape[4]]
                 count_predictions[x_min:x_max, y_min:y_max, z_min:z_max] += 1
-                total_predictions[:, :, x_min:x_max, y_min:y_max, z_min:z_max] += predictions.cuda()#.data.cpu().numpy()
+                total_predictions[:, :, x_min:x_max, y_min:y_max, z_min:z_max] += predictions.to(device())#.data.cpu().numpy()
     total_predictions /= count_predictions
     return total_predictions
 
@@ -73,7 +74,7 @@ class SpatialTransformer(nn.Module):
         grids = torch.meshgrid(vectors)
         grid = torch.stack(grids)
         grid = torch.unsqueeze(grid, 0)
-        grid = grid.type(torch.FloatTensor).cuda()
+        grid = grid.type(torch.FloatTensor).to(device())
 
         # registering the grid as a buffer cleanly moves it to the GPU, but it also
         # adds it to the state dict. this is annoying since everything in the state dict
@@ -108,8 +109,8 @@ class register_model(nn.Module):
         self.spatial_trans = SpatialTransformer(img_size, mode)
 
     def forward(self, x):
-        img = x[0].cuda()
-        flow = x[1].cuda()
+        img = x[0].to(device())
+        flow = x[1].to(device())
         out = self.spatial_trans(img, flow)
         return out
 

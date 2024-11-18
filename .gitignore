@@ -1,4 +1,5 @@
 "main_script.py"
 /env_AMS/
-/ViT-V-Net/pretrained_model_save
+/ViT-V-Net/IXI_data/
+/ViT-V-Net/pretrained_models
 /ViT-V-Net/experiments/

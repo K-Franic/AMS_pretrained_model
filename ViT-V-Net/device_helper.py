@@ -1,3 +1,3 @@
 import torch
-def device(tensor):
+def device():
     return (torch.device("cuda" if torch.cuda.is_available() else "cpu"))
