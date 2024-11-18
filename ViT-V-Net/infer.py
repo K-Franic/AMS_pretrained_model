@@ -68,7 +68,7 @@ def main():
     for i in range(46):
         line = line + ',' + dict[i]
     csv_writter(line, 'experiments/' + model_folder[:-1])
-    model = models.ViTVNet(config_vit, img_size=(160, 192, 224))
+    model = models.ViTVNet(config_vit, img_size=(160, 192, 224))        #dodano map_location=...'cpu', za GPU naprave odstrani to!
     best_model = torch.load(model_dir + natsorted(os.listdir(model_dir))[model_idx], map_location=torch.device('cpu'))['state_dict']
     print('Best model: {}'.format(natsorted(os.listdir(model_dir))[model_idx]))
     model.load_state_dict(best_model)

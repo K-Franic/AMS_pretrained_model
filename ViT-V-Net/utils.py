@@ -159,6 +159,20 @@ def jacobian_determinant(disp):
                 jac_det[i, j, k] =  np.linalg.det(jac_mij)
     return jac_det
 
+import nibabel as nib 
+import numpy as np 
+def save_nifti(array, file_path, affine=None): 
+    """ Save a 3D or 4D NumPy array as a NIfTI file. Args: array (np.ndarray): 3D or 4D array representing the medical image. 
+    file_path (str): Output file path for the NIfTI file. affine (np.ndarray): Affine transformation matrix (default: identity matrix). """
+    # Default affine matrix for a simple voxel space 
+    if affine is None: 
+        affine = np.eye(4) # Convert the array into a NIfTI image
+    
+    nifti_img = nib.Nifti1Image(array, affine) 
+    
+    # Save the NIfTI image to the specified file path 
+    nib.save(nifti_img, file_path) 
+    print(f"Saved NIfTI file to {file_path}")
 
 import re
 def process_label():
